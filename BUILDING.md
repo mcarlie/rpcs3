@@ -1,3 +1,45 @@
+## Apple Silicon
+
+# install dependencies
+https://github.com/RPCS3/rpcs3/issues/15008
+
+brew install cmake ffmpeg glew libusb llvm@17 molten-vk nasm ninja pkg-config qt@6 sdl2 vulkan-headers
+brew rm glslang cubeb
+
+export Qt6_DIR=$(brew --prefix)/opt/qt6
+export VULKAN_SDK=$(brew --prefix)/opt/molten-vk
+ln -s "$VULKAN_SDK/lib/libMoltenVK.dylib" "$VULKAN_SDK/lib/libvulkan.dylib"
+export VK_ICD_FILENAMES=$VULKAN_SDK/share/vulkan/icd.d/MoltenVK_icd.json
+export LLVM_DIR=$(brew --prefix)/opt/llvm
+
+# Update only the submodules that are needed
+git submodule update --init ./3rdparty/asmjit
+git submodule update --init ./3rdparty/cubeb
+git submodule update --init ./3rdparty/curl
+git submodule update --init ./3rdparty/flatbuffers
+git submodule update --init ./3rdparty/glslang
+git submodule update --init ./3rdparty/GPUOpen
+git submodule update --init ./3rdparty/hidapi
+git submodule update --init ./3rdparty/libusb
+git submodule update --init ./3rdparty/miniupnp
+git submodule update --init ./3rdparty/pine
+git submodule update --init ./3rdparty/pugixml
+git submodule update --init ./3rdparty/rtmidi
+git submodule update --init ./3rdparty/SoundTouch
+git submodule update --init ./3rdparty/SPIRV
+git submodule update --init ./3rdparty/stblib
+git submodule update --init ./3rdparty/wolfssl
+git submodule update --init ./3rdparty/xxHash
+git submodule update --init ./3rdparty/yaml-cpp
+git submodule update --init ./3rdparty/libpng
+
+# Configure build system
+mkdir build && cd build
+cmake .. -DUSE_ALSA=OFF -DUSE_PULSE=OFF -DUSE_AUDIOUNIT=ON  -DUSE_FAUDIO=OFF -DUSE_SYSTEM_FFMPEG=on  -DUSE_SYSTEM_MVK=on  -DUSE_NATIVE_INSTRUCTIONS=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DLLVM_TARGETS_TO_BUILD="AArch64;ARM" -GNinja -DBUILD_LLVM=OFF -DUSE_SYSTEM_LIBPNG=OFF -Wno-deprecated
+
+# Build
+ninja && codesign --force --deep --sign - bin/rpcs3.app/Contents/MacOS/rpcs3
+
 # Building
 
 Only Windows and Linux are officially supported for building. However, various other platforms are capable of building RPCS3.
